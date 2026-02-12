@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WASM Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .display {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 32px;
+            text-align: right;
+            font-weight: bold;
+            color: #333;
+            border: 2px solid #ddd;
+            min-height: 70px;
+            word-wrap: break-word;
+        }
+
+        .memory-display {
+            font-size: 14px;
+            color: #666;
+            text-align: right;
+            margin-bottom: 10px;
+            min-height: 20px;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 20px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-number {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .btn-number:hover {
+            background: #dee2e6;
+        }
+
+        .btn-operator {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-operator:hover {
+            background: #5568d3;
+        }
+
+        .btn-equals {
+            background: #28a745;
+            color: white;
+            grid-column: span 2;
+        }
+
+        .btn-equals:hover {
+            background: #218838;
+        }
+
+        .btn-clear {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: #c82333;
+        }
+
+        .btn-memory {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-memory:hover {
+            background: #e0a800;
+        }
+
+        .history {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .history-item {
+            padding: 8px;
+            background: white;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .error {
+            color: #dc3545;
+            font-size: 18px;
+        }
+
+        .info {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🦀 Rust WASM Calculator</h1>
+        
+        <div class="memory-display" id="memory-display">Memory: 0</div>
+        <div class="display" id="display">0</div>
+        
+        <div class="button-grid">
+            <button class="btn-memory" onclick="memoryStore()">MS</button>
+            <button class="btn-memory" onclick="memoryRecall()">MR</button>
+            <button class="btn-memory" onclick="memoryClear()">MC</button>
+            <button class="btn-memory" onclick="memoryAdd()">M+</button>
+            
+            <button class="btn-clear" onclick="clearCalc()">C</button>
+            <button class="btn-operator" onclick="setOperation('sqrt')">√</button>
+            <button class="btn-operator" onclick="setOperation('power')">x²</button>
+            <button class="btn-operator" onclick="setOperation('divide')">÷</button>
+            
+            <button class="btn-number" onclick="appendNumber('7')">7</button>
+            <button class="btn-number" onclick="appendNumber('8')">8</button>
+            <button class="btn-number" onclick="appendNumber('9')">9</button>
+            <button class="btn-operator" onclick="setOperation('multiply')">×</button>
+            
+            <button class="btn-number" onclick="appendNumber('4')">4</button>
+            <button class="btn-number" onclick="appendNumber('5')">5</button>
+            <button class="btn-number" onclick="appendNumber('6')">6</button>
+            <button class="btn-operator" onclick="setOperation('subtract')">-</button>
+            
+            <button class="btn-number" onclick="appendNumber('1')">1</button>
+            <button class="btn-number" onclick="appendNumber('2')">2</button>
+            <button class="btn-number" onclick="appendNumber('3')">3</button>
+            <button class="btn-operator" onclick="setOperation('add')">+</button>
+            
+            <button class="btn-number" onclick="appendNumber('0')">0</button>
+            <button class="btn-number" onclick="appendNumber('.')">.</button>
+            <button class="btn-equals" onclick="calculate()">=</button>
+        </div>
+
+        <button class="btn-operator" style="width: 100%; margin-bottom: 10px;" onclick="calculateFactorial()">n!</button>
+        
+        <div class="history">
+            <h3>History (<span id="history-count">0</span>)</h3>
+            <div id="history-list"></div>
+            <button class="btn-clear" style="width: 100%; margin-top: 10px; padding: 10px;" onclick="clearHistory()">Clear History</button>
+        </div>
+
+        <div class="info">
+            Powered by Rust 🦀 + WebAssembly
+        </div>
+    </div>
+
+    <script type="module">
+        import init, { 
+            Calculator, 
+            percentage, 
+            compound_interest, 
+            factorial_js 
+        } from './pkg/wasm_calc.js';
+
+        let calc;
+        let currentInput = '0';
+        let operation = null;
+        let waitingForOperand = false;
+        let manualHistory = [];  // Track factorial and other manual operations
+
+        async function initWasm() {
+            await init();
+            calc = new Calculator();
+            updateDisplay();
+            updateMemoryDisplay();
+            console.log('WASM Calculator initialized');
+        }
+
+        function updateDisplay() {
+            document.getElementById('display').textContent = currentInput;
+            updateHistoryDisplay();
+        }
+
+        function updateMemoryDisplay() {
+            const memory = calc.get_memory();
+            document.getElementById('memory-display').textContent = 
+                `Memory: ${memory !== 0 ? memory : '0'}`;
+        }
+
+        function updateHistoryDisplay() {
+            const calcCount = calc.history_count();
+            const calcHistory = calc.get_history();
+            
+            // Merge Calculator history and manual history
+            const totalCount = calcCount + manualHistory.length;
+            document.getElementById('history-count').textContent = totalCount;
+            
+            const historyList = document.getElementById('history-list');
+            
+            if (totalCount === 0) {
+                historyList.innerHTML = '<div style="color: #999; font-style: italic;">No history yet</div>';
+                return;
+            }
+            
+            // Build combined history HTML
+            let historyHTML = '';
+            
+            // Add manual history (factorials, etc.) - most recent first
+            manualHistory.slice(-5).reverse().forEach(item => {
+                historyHTML += `<div class="history-item">${item}</div>`;
+            });
+            
+            // Add calculator history
+            const calcHistoryItems = calcHistory.slice(-5).reverse();
+            calcHistoryItems.forEach(item => {
+                const opSymbol = {
+                    'Add': '+',
+                    'Subtract': '-',
+                    'Multiply': '×',
+                    'Divide': '÷'
+                }[item.operation];
+                
+                historyHTML += `<div class="history-item">${item.operand1} ${opSymbol} ${item.operand2} = ${item.result}</div>`;
+            });
+            
+            historyList.innerHTML = historyHTML;
+            
+            // Keep only last 5 items total
+            const allItems = historyList.querySelectorAll('.history-item');
+            if (allItems.length > 5) {
+                for (let i = 5; i < allItems.length; i++) {
+                    allItems[i].remove();
+                }
+            }
+        }
+
+        window.appendNumber = function(num) {
+            if (waitingForOperand) {
+                currentInput = num;
+                waitingForOperand = false;
+            } else {
+                currentInput = currentInput === '0' ? num : currentInput + num;
+            }
+            updateDisplay();
+        };
+
+        window.setOperation = function(op) {
+            const inputValue = parseFloat(currentInput);
+            
+            if (op === 'sqrt') {
+                calc.set_value(inputValue);
+                try {
+                    const result = calc.sqrt();
+                    currentInput = result.toString();
+                } catch (error) {
+                    currentInput = 'Error: ' + error;
+                }
+                updateDisplay();
+                return;
+            }
+            
+            if (op === 'power') {
+                calc.set_value(inputValue);
+                const result = calc.power(2);
+                currentInput = result.toString();
+                updateDisplay();
+                return;
+            }
+            
+            if (operation !== null) {
+                calculate();
+            } else {
+                calc.set_value(inputValue);
+            }
+            
+            operation = op;
+            waitingForOperand = true;
+        };
+
+        window.calculate = function() {
+            if (operation === null) return;
+            
+            const inputValue = parseFloat(currentInput);
+            let result;
+            
+            try {
+                switch (operation) {
+                    case 'add':
+                        result = calc.add(inputValue);
+                        break;
+                    case 'subtract':
+                        result = calc.subtract(inputValue);
+                        break;
+                    case 'multiply':
+                        result = calc.multiply(inputValue);
+                        break;
+                    case 'divide':
+                        result = calc.divide(inputValue);
+                        break;
+                }
+                
+                currentInput = result.toString();
+                operation = null;
+                waitingForOperand = true;
+            } catch (error) {
+                currentInput = 'Error: ' + error;
+            }
+            
+            updateDisplay();
+        };
+
+        window.clearCalc = function() {
+            currentInput = '0';
+            operation = null;
+            waitingForOperand = false;
+            calc.clear();
+            updateDisplay();
+        };
+
+        window.memoryStore = function() {
+            calc.set_value(parseFloat(currentInput));
+            calc.memory_store();
+            updateMemoryDisplay();
+        };
+
+        window.memoryRecall = function() {
+            const value = calc.memory_recall();
+            currentInput = value.toString();
+            updateDisplay();
+        };
+
+        window.memoryClear = function() {
+            calc.memory_clear();
+            updateMemoryDisplay();
+        };
+
+        window.memoryAdd = function() {
+            calc.set_value(parseFloat(currentInput));
+            calc.memory_add();
+            updateMemoryDisplay();
+        };
+
+        window.clearHistory = function() {
+            calc.clear_history();
+            manualHistory = [];
+            updateHistoryDisplay();
+        };
+
+        window.calculateFactorial = function() {
+            const n = parseInt(currentInput);
+            if (isNaN(n) || n < 0) {
+                currentInput = 'Error: Invalid input';
+            } else {
+                try {
+                    const result = factorial_js(n);
+                    
+                    // Add to manual history
+                    manualHistory.push(`${n}! = ${result}`);
+                    
+                    currentInput = result.toString();
+                } catch (error) {
+                    currentInput = 'Error: ' + error;
+                }
+            }
+            updateDisplay();
+        };
+
+        // Initialize on load
+        initWasm();
+    </script>
+</body>
+</html>
