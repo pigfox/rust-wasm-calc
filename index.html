@@ -231,7 +231,7 @@
         let currentInput = '0';
         let operation = null;
         let waitingForOperand = false;
-        let manualHistory = [];  // Track factorial and other manual operations
+        let unifiedHistory = [];  // Single history for all operations in chronological order
 
         async function initWasm() {
             await init();
@@ -253,50 +253,21 @@
         }
 
         function updateHistoryDisplay() {
-            const calcCount = calc.history_count();
-            const calcHistory = calc.get_history();
-            
-            // Merge Calculator history and manual history
-            const totalCount = calcCount + manualHistory.length;
-            document.getElementById('history-count').textContent = totalCount;
-            
             const historyList = document.getElementById('history-list');
             
-            if (totalCount === 0) {
+            document.getElementById('history-count').textContent = unifiedHistory.length;
+            
+            if (unifiedHistory.length === 0) {
                 historyList.innerHTML = '<div style="color: #999; font-style: italic;">No history yet</div>';
                 return;
             }
             
-            // Build combined history HTML
-            let historyHTML = '';
-            
-            // Add manual history (factorials, etc.) - most recent first
-            manualHistory.slice(-5).reverse().forEach(item => {
-                historyHTML += `<div class="history-item">${item}</div>`;
-            });
-            
-            // Add calculator history
-            const calcHistoryItems = calcHistory.slice(-5).reverse();
-            calcHistoryItems.forEach(item => {
-                const opSymbol = {
-                    'Add': '+',
-                    'Subtract': '-',
-                    'Multiply': '×',
-                    'Divide': '÷'
-                }[item.operation];
-                
-                historyHTML += `<div class="history-item">${item.operand1} ${opSymbol} ${item.operand2} = ${item.result}</div>`;
-            });
-            
-            historyList.innerHTML = historyHTML;
-            
-            // Keep only last 5 items total
-            const allItems = historyList.querySelectorAll('.history-item');
-            if (allItems.length > 5) {
-                for (let i = 5; i < allItems.length; i++) {
-                    allItems[i].remove();
-                }
-            }
+            // Display last 5 items in reverse chronological order (most recent first)
+            historyList.innerHTML = unifiedHistory
+                .slice(-5)
+                .reverse()
+                .map(item => `<div class="history-item">${item}</div>`)
+                .join('');
         }
 
         window.appendNumber = function(num) {
@@ -316,6 +287,10 @@
                 calc.set_value(inputValue);
                 try {
                     const result = calc.sqrt();
+                    
+                    // Add to unified history
+                    unifiedHistory.push(`√${inputValue} = ${result}`);
+                    
                     currentInput = result.toString();
                 } catch (error) {
                     currentInput = 'Error: ' + error;
@@ -327,6 +302,10 @@
             if (op === 'power') {
                 calc.set_value(inputValue);
                 const result = calc.power(2);
+                
+                // Add to unified history
+                unifiedHistory.push(`${inputValue}² = ${result}`);
+                
                 currentInput = result.toString();
                 updateDisplay();
                 return;
@@ -346,23 +325,32 @@
             if (operation === null) return;
             
             const inputValue = parseFloat(currentInput);
+            const previousValue = calc.get_value();
             let result;
             
             try {
+                let opSymbol;
                 switch (operation) {
                     case 'add':
                         result = calc.add(inputValue);
+                        opSymbol = '+';
                         break;
                     case 'subtract':
                         result = calc.subtract(inputValue);
+                        opSymbol = '-';
                         break;
                     case 'multiply':
                         result = calc.multiply(inputValue);
+                        opSymbol = '×';
                         break;
                     case 'divide':
                         result = calc.divide(inputValue);
+                        opSymbol = '÷';
                         break;
                 }
+                
+                // Add to unified history
+                unifiedHistory.push(`${previousValue} ${opSymbol} ${inputValue} = ${result}`);
                 
                 currentInput = result.toString();
                 operation = null;
@@ -407,7 +395,7 @@
 
         window.clearHistory = function() {
             calc.clear_history();
-            manualHistory = [];
+            unifiedHistory = [];
             updateHistoryDisplay();
         };
 
@@ -419,8 +407,8 @@
                 try {
                     const result = factorial_js(n);
                     
-                    // Add to manual history
-                    manualHistory.push(`${n}! = ${result}`);
+                    // Add to unified history
+                    unifiedHistory.push(`${n}! = ${result}`);
                     
                     currentInput = result.toString();
                 } catch (error) {
