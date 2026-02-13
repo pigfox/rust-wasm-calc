@@ -1,0 +1,226 @@
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Body */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Container */
+.container {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    padding: 30px;
+    max-width: 500px;
+    width: 100%;
+}
+
+/* Header */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.logo {
+    width: 40px;
+    height: 40px;
+    display: none; /* Hidden by default, shows when logo exists */
+}
+
+.logo.visible {
+    display: block;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    font-size: 28px;
+}
+
+/* Display */
+.memory-display {
+    font-size: 14px;
+    color: #666;
+    text-align: right;
+    margin-bottom: 10px;
+    min-height: 20px;
+}
+
+.display {
+    background: #f5f5f5;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 32px;
+    text-align: right;
+    font-weight: bold;
+    color: #333;
+    border: 2px solid #ddd;
+    min-height: 70px;
+    word-wrap: break-word;
+}
+
+/* Button Grid */
+.button-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+/* Base Button Styles */
+button {
+    padding: 20px;
+    font-size: 18px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* Number Buttons */
+.btn-number {
+    background: #e9ecef;
+    color: #333;
+}
+
+.btn-number:hover {
+    background: #dee2e6;
+}
+
+/* Operator Buttons */
+.btn-operator {
+    background: #667eea;
+    color: white;
+}
+
+.btn-operator:hover {
+    background: #5568d3;
+}
+
+/* Equals Button */
+.btn-equals {
+    background: #28a745;
+    color: white;
+    grid-column: span 2;
+}
+
+.btn-equals:hover {
+    background: #218838;
+}
+
+/* Clear Button */
+.btn-clear {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-clear:hover {
+    background: #c82333;
+}
+
+/* Memory Buttons */
+.btn-memory {
+    background: #ffc107;
+    color: #333;
+}
+
+.btn-memory:hover {
+    background: #e0a800;
+}
+
+/* Factorial Button */
+.btn-factorial {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* History */
+.history {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.history h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #666;
+}
+
+.history-item {
+    padding: 8px;
+    background: white;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    font-size: 14px;
+    color: #333;
+}
+
+.btn-clear-history {
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+}
+
+/* Error State */
+.error {
+    color: #dc3545;
+    font-size: 18px;
+}
+
+/* Info */
+.info {
+    text-align: center;
+    margin-top: 20px;
+    color: #666;
+    font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .container {
+        padding: 20px;
+    }
+    
+    h1 {
+        font-size: 24px;
+    }
+    
+    .display {
+        font-size: 28px;
+        padding: 15px;
+    }
+    
+    button {
+        padding: 15px;
+        font-size: 16px;
+    }
+}

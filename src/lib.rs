@@ -9,7 +9,7 @@ pub enum CalcError {
 }
 
 impl CalcError {
-    fn as_str(&self) -> &str {
+    pub fn as_str(&self) -> &str {
         match self {
             CalcError::DivisionByZero => "Division by zero",
             CalcError::NegativeSqrt => "Cannot take square root of negative number",
@@ -28,6 +28,8 @@ impl From<CalcError> for JsValue {
         #[cfg(not(target_arch = "wasm32"))]
         {
             // Fallback for non-WASM (shouldn't be called)
+            // Use err to avoid unused variable warning
+            let _ = err.as_str();
             JsValue::NULL
         }
     }
@@ -868,5 +870,183 @@ mod tests {
         calc.set_value(25.0);
         calc.memory_add();
         assert_eq!(calc.get_memory(), -25.0);
+    }
+
+    #[test]
+    fn test_calc_error_from_trait() {
+        // Test the From<CalcError> for JsValue implementation
+        let err = CalcError::DivisionByZero;
+        let _js_value: JsValue = err.into();
+        
+        let err = CalcError::NegativeSqrt;
+        let _js_value: JsValue = err.into();
+        
+        let err = CalcError::Overflow;
+        let _js_value: JsValue = err.into();
+    }
+
+    #[test]
+    fn test_calc_error_debug() {
+        let err = CalcError::DivisionByZero;
+        let debug_str = format!("{:?}", err);
+        assert!(debug_str.contains("DivisionByZero"));
+    }
+
+    #[test]
+    fn test_operation_debug() {
+        let op = Operation::Add;
+        let debug_str = format!("{:?}", op);
+        assert!(debug_str.contains("Add"));
+    }
+
+    #[test]
+    fn test_percentage_large_values() {
+        assert_eq!(percentage(1000000.0, 0.5), 5000.0);
+    }
+
+    #[test]
+    fn test_add_zero() {
+        let mut calc = Calculator::new();
+        calc.set_value(42.0);
+        let result = calc.add(0.0);
+        assert_eq!(result, 42.0);
+    }
+
+    #[test]
+    fn test_subtract_zero() {
+        let mut calc = Calculator::new();
+        calc.set_value(42.0);
+        let result = calc.subtract(0.0);
+        assert_eq!(result, 42.0);
+    }
+
+    #[test]
+    fn test_multiply_one() {
+        let mut calc = Calculator::new();
+        calc.set_value(42.0);
+        let result = calc.multiply(1.0);
+        assert_eq!(result, 42.0);
+    }
+
+    #[test]
+    fn test_divide_one() {
+        let mut calc = Calculator::new();
+        calc.set_value(42.0);
+        let result = calc.divide(1.0).unwrap();
+        assert_eq!(result, 42.0);
+    }
+
+    #[test]
+    fn test_divide_self() {
+        let mut calc = Calculator::new();
+        calc.set_value(42.0);
+        let result = calc.divide(42.0).unwrap();
+        assert_eq!(result, 1.0);
+    }
+
+    #[test]
+    fn test_power_negative_base() {
+        let mut calc = Calculator::new();
+        calc.set_value(-2.0);
+        let result = calc.power(3.0);
+        assert_eq!(result, -8.0);
+    }
+
+    #[test]
+    fn test_sqrt_large_number() {
+        let mut calc = Calculator::new();
+        calc.set_value(10000.0);
+        let result = calc.sqrt().unwrap();
+        assert_eq!(result, 100.0);
+    }
+
+    #[test]
+    fn test_factorial_mid_range() {
+        assert_eq!(factorial(15).unwrap(), 1307674368000);
+    }
+
+    #[test]
+    fn test_compound_interest_high_rate() {
+        let result = compound_interest(1000.0, 20.0, 5.0, 1.0);
+        assert!(result > 2000.0); // Should more than double
+    }
+
+    #[test]
+    fn test_calculation_history_struct() {
+        let history = CalculationHistory {
+            operand1: 10.0,
+            operand2: 5.0,
+            operation: Operation::Add,
+            result: 15.0,
+        };
+        
+        // Test all fields are accessible
+        assert_eq!(history.operand1, 10.0);
+        assert_eq!(history.operand2, 5.0);
+        assert_eq!(history.result, 15.0);
+        assert_eq!(history.operation, Operation::Add);
+    }
+
+    #[test]
+    fn test_operation_all_variants() {
+        // Ensure all operation variants are covered
+        let _add = Operation::Add;
+        let _sub = Operation::Subtract;
+        let _mul = Operation::Multiply;
+        let _div = Operation::Divide;
+        
+        // Test Debug for all variants
+        assert_eq!(format!("{:?}", Operation::Add), "Add");
+        assert_eq!(format!("{:?}", Operation::Subtract), "Subtract");
+        assert_eq!(format!("{:?}", Operation::Multiply), "Multiply");
+        assert_eq!(format!("{:?}", Operation::Divide), "Divide");
+    }
+
+    #[test]
+    fn test_calc_error_all_variants() {
+        // Test all error variants with as_str
+        let err1 = CalcError::DivisionByZero;
+        let err2 = CalcError::NegativeSqrt;
+        let err3 = CalcError::Overflow;
+        
+        // Verify as_str returns correct strings
+        assert!(!err1.as_str().is_empty());
+        assert!(!err2.as_str().is_empty());
+        assert!(!err3.as_str().is_empty());
+        
+        // Test Debug trait
+        assert!(format!("{:?}", err1).contains("DivisionByZero"));
+        assert!(format!("{:?}", err2).contains("NegativeSqrt"));
+        assert!(format!("{:?}", err3).contains("Overflow"));
+    }
+
+    #[test]
+    fn test_memory_operations_coverage() {
+        let mut calc = Calculator::new();
+        
+        // Test get_memory when empty
+        assert_eq!(calc.get_memory(), 0.0);
+        
+        // Store value
+        calc.set_value(100.0);
+        calc.memory_store();
+        assert_eq!(calc.get_memory(), 100.0);
+        
+        // Test memory_recall
+        calc.set_value(0.0);
+        calc.memory_recall();
+        assert_eq!(calc.get_value(), 100.0);
+        
+        // Clear and verify
+        calc.memory_clear();
+        assert_eq!(calc.get_memory(), 0.0);
+    }
+
+    #[test]
+    fn test_power_zero_exponent() {
+        let mut calc = Calculator::new();
+        calc.set_value(999.0);
+        let result = calc.power(0.0);
+        assert_eq!(result, 1.0);
     }
 }
