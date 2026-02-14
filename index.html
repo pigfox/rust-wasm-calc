@@ -1,65 +1,107 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WASM Calculator</title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <img src="assets/logo.png" alt="Logo" class="logo" id="logo">
-            <h1>🦀 Rust WASM Calculator</h1>
-        </div>
-        
-        <div class="memory-display" id="memory-display">Memory: 0</div>
-        <div class="display" id="display">0</div>
-        
-        <div class="button-grid">
-            <button class="btn-memory" onclick="memoryStore()">MS</button>
-            <button class="btn-memory" onclick="memoryRecall()">MR</button>
-            <button class="btn-memory" onclick="memoryClear()">MC</button>
-            <button class="btn-memory" onclick="memoryAdd()">M+</button>
-            
-            <button class="btn-clear" onclick="clearCalc()">C</button>
-            <button class="btn-operator" onclick="setOperation('sqrt')">√</button>
-            <button class="btn-operator" onclick="setOperation('power')">x²</button>
-            <button class="btn-operator" onclick="setOperation('divide')">÷</button>
-            
-            <button class="btn-number" onclick="appendNumber('7')">7</button>
-            <button class="btn-number" onclick="appendNumber('8')">8</button>
-            <button class="btn-number" onclick="appendNumber('9')">9</button>
-            <button class="btn-operator" onclick="setOperation('multiply')">×</button>
-            
-            <button class="btn-number" onclick="appendNumber('4')">4</button>
-            <button class="btn-number" onclick="appendNumber('5')">5</button>
-            <button class="btn-number" onclick="appendNumber('6')">6</button>
-            <button class="btn-operator" onclick="setOperation('subtract')">-</button>
-            
-            <button class="btn-number" onclick="appendNumber('1')">1</button>
-            <button class="btn-number" onclick="appendNumber('2')">2</button>
-            <button class="btn-number" onclick="appendNumber('3')">3</button>
-            <button class="btn-operator" onclick="setOperation('add')">+</button>
-            
-            <button class="btn-number" onclick="appendNumber('0')">0</button>
-            <button class="btn-number" onclick="appendNumber('.')">.</button>
-            <button class="btn-equals" onclick="calculate()">=</button>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>WASM Calculator</title>
+        <link rel="stylesheet" href="css/style.css" />
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <img src="assets/logo.webp" alt="Logo" class="logo" id="logo" />
+                <h1>🦀 Rust WASM Calculator</h1>
+            </div>
+
+            <div class="memory-display" id="memory-display">Memory: 0</div>
+            <div class="display" id="display">0</div>
+
+            <div class="button-grid">
+                <button class="btn-memory" onclick="memoryStore()">MS</button>
+                <button class="btn-memory" onclick="memoryRecall()">MR</button>
+                <button class="btn-memory" onclick="memoryClear()">MC</button>
+                <button class="btn-memory" onclick="memoryAdd()">M+</button>
+
+                <button class="btn-clear" onclick="clearCalc()">C</button>
+                <button class="btn-operator" onclick="setOperation('sqrt')">
+                    √
+                </button>
+                <button class="btn-operator" onclick="setOperation('power')">
+                    x²
+                </button>
+                <button class="btn-operator" onclick="setOperation('divide')">
+                    ÷
+                </button>
+
+                <button class="btn-number" onclick="appendNumber('7')">
+                    7
+                </button>
+                <button class="btn-number" onclick="appendNumber('8')">
+                    8
+                </button>
+                <button class="btn-number" onclick="appendNumber('9')">
+                    9
+                </button>
+                <button class="btn-operator" onclick="setOperation('multiply')">
+                    ×
+                </button>
+
+                <button class="btn-number" onclick="appendNumber('4')">
+                    4
+                </button>
+                <button class="btn-number" onclick="appendNumber('5')">
+                    5
+                </button>
+                <button class="btn-number" onclick="appendNumber('6')">
+                    6
+                </button>
+                <button class="btn-operator" onclick="setOperation('subtract')">
+                    -
+                </button>
+
+                <button class="btn-number" onclick="appendNumber('1')">
+                    1
+                </button>
+                <button class="btn-number" onclick="appendNumber('2')">
+                    2
+                </button>
+                <button class="btn-number" onclick="appendNumber('3')">
+                    3
+                </button>
+                <button class="btn-operator" onclick="setOperation('add')">
+                    +
+                </button>
+
+                <button class="btn-number" onclick="appendNumber('0')">
+                    0
+                </button>
+                <button class="btn-number" onclick="appendNumber('.')">
+                    .
+                </button>
+                <button class="btn-equals" onclick="calculate()">=</button>
+            </div>
+
+            <button
+                class="btn-operator btn-factorial"
+                onclick="calculateFactorial()"
+            >
+                n!
+            </button>
+
+            <div class="history">
+                <h3>History (<span id="history-count">0</span>)</h3>
+                <div id="history-list"></div>
+                <button
+                    class="btn-clear btn-clear-history"
+                    onclick="clearHistory()"
+                >
+                    Clear History
+                </button>
+            </div>
+
+            <div class="info">Powered by Rust 🦀 + WebAssembly</div>
         </div>
 
-        <button class="btn-operator btn-factorial" onclick="calculateFactorial()">n!</button>
-        
-        <div class="history">
-            <h3>History (<span id="history-count">0</span>)</h3>
-            <div id="history-list"></div>
-            <button class="btn-clear btn-clear-history" onclick="clearHistory()">Clear History</button>
-        </div>
-
-        <div class="info">
-            Powered by Rust 🦀 + WebAssembly
-        </div>
-    </div>
-
-    <script type="module" src="js/app.js"></script>
-</body>
+        <script type="module" src="js/app.js"></script>
+    </body>
 </html>
