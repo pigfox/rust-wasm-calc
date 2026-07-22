@@ -6,6 +6,7 @@ pub enum CalcError {
     DivisionByZero,
     NegativeSqrt,
     Overflow,
+    InvalidInput,
 }
 
 impl CalcError {
@@ -14,6 +15,7 @@ impl CalcError {
             CalcError::DivisionByZero => "Division by zero",
             CalcError::NegativeSqrt => "Cannot take square root of negative number",
             CalcError::Overflow => "Factorial overflow: n must be <= 20",
+            CalcError::InvalidInput => "Invalid input: n must be a non-negative integer <= 20",
         }
     }
 }
@@ -220,10 +222,21 @@ pub fn factorial(n: u32) -> Result<u64, CalcError> {
 }
 
 // WASM wrapper for factorial
-#[wasm_bindgen]
-pub fn factorial_js(n: u32) -> Result<u64, JsValue> {
-    factorial(n).map_err(|e| e.into())
+#[wasm_bindgen(js_name = factorial)]
+pub fn factorial_js(n: f64) -> Result<f64, JsValue> {
+    // f64 param sees the caller's full-precision value — no ToUint32 wrap.
+    // Malformed inputs only; magnitude is the core's call so n > 20 still
+    // reports Overflow rather than being mislabelled as invalid.
+    if !n.is_finite() || n < 0.0 || n.fract() != 0.0 {
+        return Err(CalcError::InvalidInput.into());
+    }
+    // `as u32` saturates (Rust >= 1.45), so an out-of-u32-range n clamps to
+    // u32::MAX and trips the core's n > 20 check — it can never wrap into the
+    // valid 0..=20 window. Results for n <= 20 are exact in f64 (20! odd part
+    // fits in 53 mantissa bits).
+    factorial(n as u32).map(|v| v as f64).map_err(Into::into)
 }
+
 
 #[cfg(test)]
 mod tests {
@@ -1049,4 +1062,11 @@ mod tests {
         let result = calc.power(0.0);
         assert_eq!(result, 1.0);
     }
+    #[test]
+    fn invalid_input_as_str() {
+        assert_eq!(CalcError::InvalidInput.as_str(), "Invalid input: n must be a non-negative integer <= 20");
+        assert_eq!(CalcError::InvalidInput, CalcError::InvalidInput.clone());
+        assert_ne!(CalcError::InvalidInput, CalcError::Overflow);
+    }
+
 }

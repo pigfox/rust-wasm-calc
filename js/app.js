@@ -3,7 +3,7 @@ import init, {
     Calculator, 
     percentage, 
     compound_interest, 
-    factorial_js 
+    factorial 
 } from '../pkg/wasm_calc.js';
 
 // Application state
@@ -209,11 +209,11 @@ window.clearHistory = function() {
 // Calculate factorial
 window.calculateFactorial = function() {
     const n = parseInt(currentInput);
-    if (isNaN(n) || n < 0) {
+    if (isNaN(n) || n < 0 || n > 20 || !Number.isInteger(n)) {
         currentInput = 'Error: Invalid input';
     } else {
         try {
-            const result = factorial_js(n);
+            const result = factorial(n);
             
             // Add to unified history
             unifiedHistory.push(`${n}! = ${result}`);
